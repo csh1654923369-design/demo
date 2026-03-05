@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>米埗村 - 村庄展示</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans SC", sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 40px;
+            overflow-x: auto;
+        }
+
+        /* 主容器 */
+        .container {
+            display: inline-block;
+        }
+
+        /* 标题样式 */
+        h1 {
+            font-size: 2.5rem;
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 30px;
+            letter-spacing: 0.05em;
+            position: relative;
+            display: inline-block;
+        }
+
+        /* 标题下划线装饰 */
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 60px;
+            height: 4px;
+            background: linear-gradient(90deg, #3498db, #2ecc71);
+            border-radius: 2px;
+        }
+
+        /* 图片框 - 固定尺寸 1868×1302 */
+        .image-box {
+            width: 1868px;
+            height: 1302px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* 图片样式 */
+        .image-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            display: block;
+        }
+
+        /* 加载占位 */
+        .image-box::before {
+            content: '加载中...';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #95a5a6;
+            font-size: 1rem;
+            z-index: 0;
+        }
+
+        .image-box img {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 响应式调整 - 当屏幕小于图片宽度时允许横向滚动 */
+        @media (max-width: 1948px) {
+            body {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 标题 -->
+        <h1>米埗村</h1>
+        
+        <!-- 图片框 -->
+        <div class="image-box">
+            <!-- 请将 village_aerial.jpg 替换为你的实际文件名 -->
+            <img src="village_aerial.jpg" 
+                 alt="米埗村航拍图" 
+                 onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'display:flex;justify-content:center;align-items:center;height:100%;color:#7f8c8d;\'>图片加载失败，请检查文件名</div>'">
+        </div>
+    </div>
+
+    <script>
+        // 图片加载处理
+        document.addEventListener('DOMContentLoaded', function() {
+            const img = document.querySelector('.image-box img');
+            
+            img.addEventListener('load', function() {
+                console.log('图片加载成功');
+            });
+            
+            img.addEventListener('error', function() {
+                console.log('图片加载失败');
+            });
+        });
+    </script>
+</body>
+</html>
