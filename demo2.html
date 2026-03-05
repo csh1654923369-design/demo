@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>米埗村 - 农房信息系统</title>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+body{
+font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto;
+background:#f0f2f5;
+height:100vh;
+padding:30px;
+}
+
+.main-container{
+display:flex;
+gap:30px;
+height:100%;
+}
+
+.left-section{
+flex:2;
+display:flex;
+flex-direction:column;
+}
+
+.right-panel{
+flex:1;
+background:white;
+border-radius:10px;
+padding:30px;
+box-shadow:0 5px 20px rgba(0,0,0,0.1);
+display:flex;
+flex-direction:column;
+max-width:420px;
+}
+
+h1{
+font-size:28px;
+margin-bottom:20px;
+}
+
+.image-wrapper{
+flex:1;
+background:white;
+border-radius:10px;
+position:relative;
+overflow:hidden;
+box-shadow:0 5px 20px rgba(0,0,0,0.1);
+}
+
+.image-box{
+width:100%;
+height:100%;
+position:relative;
+}
+
+.image-box img{
+width:100%;
+height:100%;
+object-fit:contain;
+display:block;
+}
+
+#heatmap{
+position:absolute;
+top:0;
+left:0;
+width:100%;
+height:100%;
+}
+
+polygon{
+fill:rgba(255,0,0,0.15);
+stroke:rgba(255,0,0,0.7);
+stroke-width:2;
+cursor:pointer;
+transition:0.2s;
+}
+
+polygon:hover{
+fill:rgba(255,80,0,0.35);
+stroke:rgba(255,80,0,1);
+}
+
+.panel-header{
+font-size:20px;
+margin-bottom:20px;
+border-bottom:2px solid #eee;
+padding-bottom:10px;
+}
+
+.info-item{
+margin-bottom:20px;
+}
+
+.info-label{
+font-size:12px;
+color:#666;
+margin-bottom:4px;
+}
+
+.info-value{
+font-size:18px;
+font-weight:500;
+}
+
+.photo-carousel{
+height:220px;
+background:#eee;
+border-radius:8px;
+overflow:hidden;
+display:flex;
+align-items:center;
+justify-content:center;
+position:relative;
+}
+
+.photo-slide{
+display:none;
+width:100%;
+height:100%;
+}
+
+.photo-slide img{
+width:100%;
+height:100%;
+object-fit:contain;
+}
+
+.photo-slide.active{
+display:block;
+}
+
+.carousel-btn{
+position:absolute;
+top:50%;
+transform:translateY(-50%);
+width:35px;
+height:35px;
+border:none;
+border-radius:50%;
+background:white;
+cursor:pointer;
+font-size:20px;
+}
+
+.prev{ left:10px }
+.next{ right:10px }
+
+.indicators{
+display:flex;
+justify-content:center;
+gap:6px;
+margin-top:10px;
+}
+
+.dot{
+width:8px;
+height:8px;
+border-radius:50%;
+background:#ccc;
+}
+
+.dot.active{
+background:#3498db;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="main-container">
+
+<div class="left-section">
+
+<h1>米埗村</h1>
+
+<div class="image-wrapper">
+
+<div class="image-box">
+
+<img id="villageImage" src="village_aerial.jpg">
+
+<svg id="heatmap"></svg>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="right-panel">
+
+<div class="panel-header">房屋信息</div>
+
+<div class="info-item">
+<div class="info-label">房屋编码</div>
+<div id="houseCode" class="info-value">-</div>
+</div>
+
+<div class="info-item">
+<div class="info-label">房屋名称</div>
+<div id="houseName" class="info-value">-</div>
+</div>
+
+<div class="info-item">
+<div class="info-label">建成年代</div>
+<div id="houseYear" class="info-value">-</div>
+</div>
+
+<div class="info-item">
+<div class="info-label">占地面积</div>
+<div id="houseArea" class="info-value">-</div>
+</div>
+
+<div class="photo-carousel" id="carousel">
+
+<button class="carousel-btn prev" onclick="changePhoto(-1)">‹</button> <button class="carousel-btn next" onclick="changePhoto(1)">›</button>
+
+</div>
+
+<div id="dots" class="indicators"></div>
+
+</div>
+
+</div>
+
+<script>
+
+let slides=[]
+let current=0
+
+function changePhoto(dir){
+
+if(slides.length==0)return
+
+slides[current].classList.remove("active")
+dots[current].classList.remove("active")
+
+current+=dir
+
+if(current<0)current=slides.length-1
+if(current>=slides.length)current=0
+
+slides[current].classList.add("active")
+dots[current].classList.add("active")
+
+}
+
+function loadPhotos(code){
+
+const carousel=document.getElementById("carousel")
+const dotsBox=document.getElementById("dots")
+
+carousel.querySelectorAll(".photo-slide").forEach(e=>e.remove())
+dotsBox.innerHTML=""
+
+slides=[]
+
+for(let i=1;i<=10;i++){
+
+let path=`photo/${code}-${i}.jpg`
+
+let slide=document.createElement("div")
+slide.className="photo-slide"
+
+let img=document.createElement("img")
+img.src=path
+
+img.onload=()=>{
+
+if(slides.length==0){
+slide.classList.add("active")
+}
+
+slides.push(slide)
+
+let dot=document.createElement("div")
+dot.className="dot"
+
+if(slides.length==1)dot.classList.add("active")
+
+dotsBox.appendChild(dot)
+
+dots.push(dot)
+
+}
+
+img.onerror=()=>slide.remove()
+
+slide.appendChild(img)
+carousel.appendChild(slide)
+
+}
+
+}
+
+function showInfo(h){
+
+document.getElementById("houseCode").innerText=h["房屋编码"]
+document.getElementById("houseName").innerText=h["房屋名称"]
+document.getElementById("houseYear").innerText=h["建成年代"]
+document.getElementById("houseArea").innerText=h["占地面积"]
+
+loadPhotos(h["房屋编码"])
+
+}
+
+function drawHeatmap(data){
+
+const svg=document.getElementById("heatmap")
+
+data.forEach(h=>{
+
+let polygon=document.createElementNS("http://www.w3.org/2000/svg","polygon")
+
+let points=`
+${h.X1},${h.Y1}
+${h.X2},${h.Y2}
+${h.X3},${h.Y3}
+${h.X4},${h.Y4}
+`
+
+polygon.setAttribute("points",points)
+
+polygon.addEventListener("click",()=>{
+
+showInfo(h)
+
+})
+
+svg.appendChild(polygon)
+
+})
+
+}
+
+fetch("Information.xlsx")
+.then(res=>res.arrayBuffer())
+.then(data=>{
+
+const wb=XLSX.read(data,{type:"array"})
+const sheet=wb.Sheets[wb.SheetNames[0]]
+
+const json=XLSX.utils.sheet_to_json(sheet)
+
+drawHeatmap(json)
+
+})
+
+</script>
+
+</body>
+</html>
