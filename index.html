@@ -29,9 +29,9 @@
                 <svg class="village-svg" id="villageSvg" 
                      viewBox="0 0 1868 1302" 
                      preserveAspectRatio="xMidYMid meet">
-                    <!-- 背景图片 - 使用大写JPG后缀 -->
+                    <!-- 背景图片 - 动态切换 -->
                     <image id="villageImage" 
-                           href="village_aerial.JPG" 
+                           href="卫星底图.jpg" 
                            x="0" y="0" 
                            width="1868" height="1302"
                            preserveAspectRatio="none"/>
@@ -47,6 +47,22 @@
                 </div>
                 
                 <div class="tooltip" id="tooltip"></div>
+            </div>
+            
+            <!-- 底图切换按钮 -->
+            <div class="map-switcher">
+                <button class="map-btn active" onclick="switchBaseMap('卫星底图')" data-map="卫星底图">
+                    <span class="map-icon">🛰️</span>
+                    <span class="map-label">卫星底图</span>
+                </button>
+                <button class="map-btn" onclick="switchBaseMap('抽象模型图')" data-map="抽象模型图">
+                    <span class="map-icon">🏗️</span>
+                    <span class="map-label">抽象模型图</span>
+                </button>
+                <button class="map-btn" onclick="switchBaseMap('航拍图')" data-map="航拍图">
+                    <span class="map-icon">🚁</span>
+                    <span class="map-label">航拍图</span>
+                </button>
             </div>
         </div>
 

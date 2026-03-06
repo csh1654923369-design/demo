@@ -169,6 +169,55 @@ h1 {
     letter-spacing: 0.5px;
 }
 
+/* 底图切换按钮容器 */
+.map-switcher {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    padding: 15px 20px;
+    background: #f8f9fa;
+    border-top: 1px solid #e9ecef;
+}
+
+/* 底图切换按钮 */
+.map-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 24px;
+    background: white;
+    border: 2px solid #dee2e6;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 100px;
+}
+
+.map-btn:hover {
+    border-color: #3498db;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.15);
+}
+
+.map-btn.active {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    border-color: #3498db;
+    color: white;
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
+.map-icon {
+    font-size: 24px;
+    line-height: 1;
+}
+
+.map-label {
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
 /* 右侧信息面板 - 约占1/3 */
 .right-panel {
     flex: 1;
@@ -401,5 +450,15 @@ h1 {
     .right-panel {
         max-width: 100%;
         min-width: unset;
+    }
+    
+    .map-switcher {
+        flex-wrap: wrap;
+    }
+    
+    .map-btn {
+        flex: 1;
+        min-width: 80px;
+        padding: 10px 15px;
     }
 }
