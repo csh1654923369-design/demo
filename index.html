@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>米埗村 - 农房信息管理系统</title>
+    
+    <!-- 引入 SheetJS 用于读取 Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <!-- 引入本地样式 -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- 控制栏 -->
+    <div class="control-bar">
+        <span id="loadingStatus"><span class="loading-spinner"></span>正在加载数据...</span>
+        <span class="status-text" id="statusText">初始化中</span>
+    </div>
+
+    <div class="main-container">
+        <!-- 左侧区域 -->
+        <div class="left-section">
+            <div class="section-header">
+                <h1>米埗村</h1>
+            </div>
+            <div class="svg-container" id="svgContainer">
+                <!-- SVG viewBox设置为原始图片比例 1868:1302 -->
+                <svg class="village-svg" id="villageSvg" 
+                     viewBox="0 0 1868 1302" 
+                     preserveAspectRatio="xMidYMid meet">
+                    <!-- 背景图片 - 使用大写JPG后缀 -->
+                    <image id="villageImage" 
+                           href="village_aerial.JPG" 
+                           x="0" y="0" 
+                           width="1868" height="1302"
+                           preserveAspectRatio="none"/>
+                    <!-- 热区将通过JS动态添加到这里 -->
+                    <g id="hotspotsGroup"></g>
+                    <g id="labelsGroup"></g>
+                </svg>
+                
+                <!-- 鼠标坐标显示 - 左下角 -->
+                <div class="coordinate-display" id="coordinateDisplay">
+                    <div class="coordinate-label">鼠标坐标 (百分比)</div>
+                    <div class="coordinate-value" id="coordinateValue">X: 0.0% Y: 0.0%</div>
+                </div>
+                
+                <div class="tooltip" id="tooltip"></div>
+            </div>
+        </div>
+
+        <!-- 右侧信息面板 -->
+        <div class="right-panel" id="rightPanel">
+            <div class="empty-state" id="emptyState">
+                <div class="empty-icon">🏠</div>
+                <div>正在加载农房数据...</div>
+                <div style="font-size: 14px; margin-top: 8px; opacity: 0.7;">请稍候</div>
+            </div>
+            
+            <div id="houseInfo" style="display: none;">
+                <div class="panel-header">
+                    <span>🏠</span>
+                    <span>房屋信息</span>
+                </div>
+                
+                <!-- 房屋编码 -->
+                <div class="info-item">
+                    <div class="info-label">房屋编码</div>
+                    <div class="info-value" id="houseCode">-</div>
+                </div>
+                
+                <!-- 房屋名称 -->
+                <div class="info-item">
+                    <div class="info-label">房屋名称</div>
+                    <div class="info-value" id="houseName">-</div>
+                </div>
+                
+                <!-- 建成年代 -->
+                <div class="info-item">
+                    <div class="info-label">建成年代</div>
+                    <div class="info-value" id="buildYear">-</div>
+                </div>
+                
+                <!-- 占地面积 -->
+                <div class="info-item">
+                    <div class="info-label">占地面积</div>
+                    <div class="info-value" id="area">-</div>
+                </div>
+
+                <!-- 调研照片 -->
+                <div class="photo-section">
+                    <div class="photo-label">调研照片</div>
+                    <div class="photo-carousel" id="photoCarousel">
+                        <div class="photo-slide active" id="slide0">
+                            <div class="photo-placeholder">暂无照片</div>
+                        </div>
+                        <div class="photo-slide" id="slide1">
+                            <div class="photo-placeholder">暂无照片</div>
+                        </div>
+                        <div class="photo-slide" id="slide2">
+                            <div class="photo-placeholder">暂无照片</div>
+                        </div>
+                        
+                        <button class="carousel-btn prev" onclick="changePhoto(-1)">‹</button>
+                        <button class="carousel-btn next" onclick="changePhoto(1)">›</button>
+                        <div class="photo-counter" id="photoCounter">1 / 3</div>
+                    </div>
+                    <div class="photo-indicators" id="indicators">
+                        <span class="indicator active" onclick="goToPhoto(0)"></span>
+                        <span class="indicator" onclick="goToPhoto(1)"></span>
+                        <span class="indicator" onclick="goToPhoto(2)"></span>
+                    </div>
+                </div>
+
+                <!-- 上传按钮 -->
+                <button class="upload-btn" onclick="handleUpload()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                    上传照片/描述
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入本地JavaScript -->
+    <script src="app.js"></script>
+</body>
+</html>
