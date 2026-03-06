@@ -2,14 +2,13 @@
 let houseData = []; // 存储Excel数据
 let currentHouse = null; // 当前选中的房屋
 let currentPhotoIndex = 0; // 当前照片索引
-let currentBaseMap = '卫星底图'; // 当前底图名称
 
 // 图片原始尺寸
 const IMAGE_WIDTH = 1868;
 const IMAGE_HEIGHT = 1302;
 
 // 支持的图片格式（大小写不敏感）
-const SUPPORTED_FORMATS = ['jpg', 'jpeg', 'png'];
+const SUPPORTED_IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png'];
 
 // 页面加载完成后自动加载数据
 window.onload = function() {
@@ -92,46 +91,6 @@ function initCoordinateTracking() {
     });
 }
 
-// 切换底图
-function switchBaseMap(mapName) {
-    currentBaseMap = mapName;
-    
-    // 更新按钮状态
-    document.querySelectorAll('.map-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.getAttribute('data-map') === mapName);
-    });
-    
-    // 尝试加载不同格式的图片
-    tryLoadImage(mapName, 0);
-}
-
-// 递归尝试加载不同格式的图片
-function tryLoadImage(baseName, formatIndex) {
-    if (formatIndex >= SUPPORTED_FORMATS.length) {
-        console.error(`无法加载底图: ${baseName}，尝试了所有格式`);
-        updateStatus(`底图加载失败: ${baseName}`, false);
-        return;
-    }
-    
-    const format = SUPPORTED_FORMATS[formatIndex];
-    const imagePath = `${baseName}.${format}`;
-    const img = new Image();
-    
-    img.onload = function() {
-        // 成功加载，更新SVG图片
-        const svgImage = document.getElementById('villageImage');
-        svgImage.setAttribute('href', imagePath);
-        updateStatus(`当前底图: ${baseName}.${format}`, false);
-    };
-    
-    img.onerror = function() {
-        // 加载失败，尝试下一种格式
-        tryLoadImage(baseName, formatIndex + 1);
-    };
-    
-    img.src = imagePath;
-}
-
 // 从服务器自动加载Excel数据
 async function loadDataFromServer() {
     try {
@@ -167,9 +126,6 @@ async function loadDataFromServer() {
         
         // 自动选中第一个房屋
         selectHouse(houseData[0]);
-        
-        // 初始化底图（自动识别格式）
-        switchBaseMap(currentBaseMap);
         
         // 隐藏加载提示
         document.getElementById('loadingStatus').style.display = 'none';
@@ -298,55 +254,79 @@ function selectHouse(house) {
     document.getElementById('buildYear').textContent = house.建成年代 || '-';
     document.getElementById('area').textContent = house.占地面积 || '-';
 
-    // 加载照片（支持多格式自动识别）
+    // 加载照片（自动识别多种格式）
     loadPhotos(house.房屋编码);
 }
 
-// 加载照片（支持多格式自动识别）
+// 尝试加载图片，支持多种格式（大小写不敏感）
+async function tryLoadImage(basePath) {
+    // 生成所有可能的格式组合（原始大小写 + 全小写 + 全大写）
+    const variations = [];
+    
+    SUPPORTED_IMAGE_EXTENSIONS.forEach(ext => {
+        // 小写扩展名
+        variations.push(`${basePath}.${ext.toLowerCase()}`);
+        // 大写扩展名
+        variations.push(`${basePath}.${ext.toUpperCase()}`);
+        // 首字母大写
+        variations.push(`${basePath}.${ext.charAt(0).toUpperCase() + ext.slice(1).toLowerCase()}`);
+    });
+    
+    // 去重
+    const uniqueVariations = [...new Set(variations)];
+    
+    // 尝试加载每个可能的URL
+    for (const url of uniqueVariations) {
+        try {
+            const img = new Image();
+            const loadPromise = new Promise((resolve, reject) => {
+                img.onload = () => resolve({ success: true, url: url, img: img });
+                img.onerror = () => reject({ success: false, url: url });
+            });
+            
+            img.src = url;
+            const result = await loadPromise;
+            return result;
+        } catch (e) {
+            // 继续尝试下一个格式
+            continue;
+        }
+    }
+    
+    // 所有格式都失败
+    return { success: false, url: null, img: null };
+}
+
+// 加载照片（改进版：自动识别 jpg/jpeg/png，大小写不敏感）
 function loadPhotos(houseCode) {
     const maxPhotos = 3;
     
     for (let i = 0; i < maxPhotos; i++) {
         const slide = document.getElementById(`slide${i}`);
-        const photoName = `${houseCode}-${i + 1}`;
+        const photoBasePath = `photo/${houseCode}-${i + 1}`;
         
         slide.innerHTML = '<div class="photo-placeholder">加载中...</div>';
         
-        // 尝试加载不同格式的照片
-        tryLoadPhoto(slide, photoName, 0);
+        // 使用异步函数尝试加载图片
+        (async (slideElement) => {
+            const result = await tryLoadImage(photoBasePath);
+            
+            if (result.success) {
+                slideElement.innerHTML = '';
+                result.img.style.maxWidth = '100%';
+                result.img.style.maxHeight = '100%';
+                result.img.style.objectFit = 'contain';
+                slideElement.appendChild(result.img);
+                console.log(`成功加载图片: ${result.url}`);
+            } else {
+                slideElement.innerHTML = '<div class="photo-placeholder">暂无照片</div>';
+            }
+            
+            updatePhotoControls();
+        })(slide);
     }
     
     updatePhotoControls();
-}
-
-// 递归尝试加载不同格式的照片
-function tryLoadPhoto(slide, photoName, formatIndex) {
-    if (formatIndex >= SUPPORTED_FORMATS.length) {
-        // 所有格式都尝试失败
-        slide.innerHTML = '<div class="photo-placeholder">暂无照片</div>';
-        return;
-    }
-    
-    const format = SUPPORTED_FORMATS[formatIndex];
-    const photoPath = `photo/${photoName}.${format}`;
-    const img = new Image();
-    
-    img.onload = function() {
-        // 成功加载
-        slide.innerHTML = '';
-        img.style.maxWidth = '100%';
-        img.style.maxHeight = '100%';
-        img.style.objectFit = 'contain';
-        slide.appendChild(img);
-        updatePhotoControls();
-    };
-    
-    img.onerror = function() {
-        // 加载失败，尝试下一种格式
-        tryLoadPhoto(slide, photoName, formatIndex + 1);
-    };
-    
-    img.src = photoPath;
 }
 
 // 更新照片控制状态
