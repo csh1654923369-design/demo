@@ -1,0 +1,405 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans SC", sans-serif;
+    background: #f5f7fa;
+    min-height: 100vh;
+    padding: 20px;
+    overflow-x: hidden;
+}
+
+/* 顶部控制栏 */
+.control-bar {
+    max-width: 1920px;
+    margin: 0 auto 20px;
+    padding: 15px 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.status-text {
+    color: #666;
+    font-size: 14px;
+    margin-left: auto;
+}
+
+.loading-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #3498db;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-right: 8px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* 主容器 - 左右布局 */
+.main-container {
+    display: flex;
+    gap: 25px;
+    max-width: 1920px;
+    margin: 0 auto;
+    height: calc(100vh - 100px);
+    min-height: 700px;
+}
+
+/* 左侧区域 - 约占2/3 */
+.left-section {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    overflow: hidden;
+    position: relative;
+}
+
+.section-header {
+    padding: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+h1 {
+    font-size: 1.8rem;
+    color: #2c3e50;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+}
+
+/* SVG 容器 - 保持原始比例 1868:1302 */
+.svg-container {
+    flex: 1;
+    position: relative;
+    background: #fafafa;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.village-svg {
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    display: block;
+    cursor: crosshair; /* 鼠标变为十字准星，提示可以查看坐标 */
+}
+
+/* 热区样式 */
+.hotspot {
+    fill: rgba(52, 152, 219, 0.25);
+    stroke: #3498db;
+    stroke-width: 2;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.hotspot:hover {
+    fill: rgba(52, 152, 219, 0.5);
+    stroke-width: 3;
+    filter: drop-shadow(0 0 4px rgba(52, 152, 219, 0.6));
+}
+
+.hotspot.active {
+    fill: rgba(231, 76, 60, 0.35);
+    stroke: #e74c3c;
+    stroke-width: 3;
+    filter: drop-shadow(0 0 6px rgba(231, 76, 60, 0.6));
+}
+
+/* 热区标签 */
+.hotspot-label {
+    font-size: 12px;
+    fill: white;
+    text-anchor: middle;
+    dominant-baseline: middle;
+    pointer-events: none;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+    font-weight: 600;
+}
+
+/* 鼠标坐标显示 - 左下角 */
+.coordinate-display {
+    position: absolute;
+    bottom: 15px;
+    left: 15px;
+    background: rgba(0, 0, 0, 0.75);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: 'Courier New', monospace;
+    pointer-events: none; /* 不阻挡鼠标事件 */
+    z-index: 100;
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255,255,255,0.1);
+    opacity: 0; /* 默认隐藏，鼠标进入图幅后显示 */
+    transition: opacity 0.3s;
+}
+
+.coordinate-display.visible {
+    opacity: 1;
+}
+
+.coordinate-label {
+    color: #aaa;
+    font-size: 11px;
+    margin-bottom: 2px;
+}
+
+.coordinate-value {
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+/* 右侧信息面板 - 约占1/3 */
+.right-panel {
+    flex: 1;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    min-width: 380px;
+    max-width: 500px;
+}
+
+.panel-header {
+    font-size: 1.2rem;
+    color: #2c3e50;
+    font-weight: 600;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #3498db;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* 信息项 */
+.info-item {
+    margin-bottom: 18px;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #3498db;
+}
+
+.info-label {
+    font-size: 0.75rem;
+    color: #7f8c8d;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.info-value {
+    font-size: 1.05rem;
+    color: #2c3e50;
+    font-weight: 500;
+}
+
+/* 照片展示区 */
+.photo-section {
+    margin-top: 10px;
+    margin-bottom: 25px;
+}
+
+.photo-label {
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 12px;
+    font-weight: 600;
+}
+
+/* 照片轮播容器 */
+.photo-carousel {
+    position: relative;
+    width: 100%;
+    height: 220px;
+    background: #f0f0f0;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #e0e0e0;
+}
+
+.photo-slide {
+    width: 100%;
+    height: 100%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: #e8e8e8;
+}
+
+.photo-slide.active {
+    display: flex;
+}
+
+.photo-slide img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.photo-placeholder {
+    color: #999;
+    font-size: 14px;
+    text-align: center;
+    padding: 20px;
+}
+
+/* 切换按钮 */
+.carousel-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    background: rgba(255,255,255,0.95);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    color: #333;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    transition: all 0.2s;
+    z-index: 10;
+}
+
+.carousel-btn:hover {
+    background: white;
+    transform: translateY(-50%) scale(1.1);
+}
+
+.carousel-btn.prev {
+    left: 10px;
+}
+
+.carousel-btn.next {
+    right: 10px;
+}
+
+/* 照片计数器 */
+.photo-counter {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: rgba(0,0,0,0.6);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+}
+
+/* 照片指示器 */
+.photo-indicators {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 10px;
+}
+
+.indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ddd;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.indicator.active {
+    background: #3498db;
+}
+
+/* 上传按钮 */
+.upload-btn {
+    margin-top: auto;
+    padding: 14px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.upload-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+/* 空状态提示 */
+.empty-state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #95a5a6;
+    text-align: center;
+    padding: 40px;
+}
+
+.empty-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+/* 提示框 */
+.tooltip {
+    position: absolute;
+    background: rgba(0,0,0,0.85);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    pointer-events: none;
+    z-index: 1000;
+    display: none;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+/* 响应式调整 */
+@media (max-width: 1200px) {
+    .main-container {
+        flex-direction: column;
+        height: auto;
+    }
+    
+    .right-panel {
+        max-width: 100%;
+        min-width: unset;
+    }
+}
